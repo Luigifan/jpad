@@ -19,22 +19,16 @@
 
 package jpad;
 
-import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FileUtils;
-import javax.swing.JRootPane;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -204,7 +198,26 @@ public class MainEditor extends javax.swing.JFrame
         }
         else
         {
-            //actually open here, but for windows
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Open a Text File");
+            fc.setFileFilter(new FileNameExtensionFilter("Plain Text Files", "txt"));
+            int returnval = fc.showOpenDialog(this);
+            if(returnval == 0)
+            {
+                hasSavedToFile = true;
+                hasChanges = false;
+                curFile = fc.getSelectedFile().getAbsolutePath();
+                try(FileInputStream stream = new FileInputStream(curFile))
+                {
+                    String file = IOUtils.toString(stream);
+                    mainTextArea.setText(file);
+                    this.setTitle(String.format("JPad - %s", curFile));
+                }
+                catch(IOException ex)
+                {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
     }
     public void saveFile(String fileToSave)
@@ -237,9 +250,25 @@ public class MainEditor extends javax.swing.JFrame
             saveAs_OSX_Nix();
             saveFile(curFile);
         }
-        else
+        else /* Windows */
         {
-            
+            JFileChooser fc = new JFileChooser();
+            if(curFile != null)
+                fc.setSelectedFile(new File(curFile));
+            else
+                fc.setSelectedFile(new File("Untitled.txt"));
+            fc.setDialogTitle("Save Text File");
+            fc.setFileFilter(new FileNameExtensionFilter("Plain Text Files", "txt"));
+            int returnval = fc.showSaveDialog(this);
+            if(returnval == 0)
+            {
+                curFile = fc.getSelectedFile().getAbsolutePath();
+                if(!curFile.endsWith(".txt"))
+                    curFile = curFile + ".txt";
+                hasChanges = false;
+                hasSavedToFile = true;
+                saveFile(curFile);
+            }
         }
     }
     ///
@@ -300,6 +329,7 @@ public class MainEditor extends javax.swing.JFrame
         seperator_OpenAndExit = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        textWrapMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("JPad");
@@ -312,6 +342,7 @@ public class MainEditor extends javax.swing.JFrame
         });
 
         mainTextArea.setColumns(20);
+        mainTextArea.setLineWrap(true);
         mainTextArea.setRows(5);
         jScrollPane1.setViewportView(mainTextArea);
         textChanged();
@@ -368,6 +399,26 @@ public class MainEditor extends javax.swing.JFrame
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Edit");
+
+        textWrapMenuItem.setText("Text Wrap");
+        textWrapMenuItem.setToolTipText("Enables or disables text wrap");
+        textWrapMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                textWrapMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(textWrapMenuItem);
+        if(mainTextArea.getLineWrap() == true)
+        {
+            textWrapMenuItem.setSelected(true);
+        }
+        else
+        {
+            textWrapMenuItem.setSelected(false);
+        }
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -487,6 +538,21 @@ public class MainEditor extends javax.swing.JFrame
        }
     }//GEN-LAST:event_formWindowClosing
 
+    private void textWrapMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_textWrapMenuItemActionPerformed
+    {//GEN-HEADEREND:event_textWrapMenuItemActionPerformed
+        if(textWrapMenuItem.isSelected())
+        {
+            //textWrapMenuItem.setSelected(false);
+            mainTextArea.setLineWrap(true);
+        }
+        else
+        {
+            //textWrapMenuItem.setSelected(true);
+            mainTextArea.setLineWrap(false);
+        }
+        mainTextArea.revalidate();
+    }//GEN-LAST:event_textWrapMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu jMenu1;
@@ -498,6 +564,7 @@ public class MainEditor extends javax.swing.JFrame
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JPopupMenu.Separator seperator_OpenAndExit;
+    private javax.swing.JCheckBoxMenuItem textWrapMenuItem;
     // End of variables declaration//GEN-END:variables
     //
 }

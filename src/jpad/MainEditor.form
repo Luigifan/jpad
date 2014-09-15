@@ -65,6 +65,20 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Edit"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="textWrapMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Text Wrap"/>
+                <Property name="toolTipText" type="java.lang.String" value="Enables or disables text wrap"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textWrapMenuItemActionPerformed"/>
+              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="if(mainTextArea.getLineWrap() == true)&#xd;&#xa;{&#xd;&#xa;    textWrapMenuItem.setSelected(true);&#xd;&#xa;}&#xd;&#xa;else&#xd;&#xa;{&#xd;&#xa;    textWrapMenuItem.setSelected(false);&#xd;&#xa;}"/>
+              </AuxValues>
+            </MenuItem>
+          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>
@@ -116,6 +130,7 @@
         <Component class="javax.swing.JTextArea" name="mainTextArea">
           <Properties>
             <Property name="columns" type="int" value="20"/>
+            <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
           </Properties>
           <AuxValues>
