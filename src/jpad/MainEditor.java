@@ -34,7 +34,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.commons.io.FileUtils;
-import sun.misc.IOUtils;
+import javax.swing.JRootPane;
 
 /**
  *
@@ -76,7 +76,7 @@ public class MainEditor extends javax.swing.JFrame
     private void macSpecifics()
     {
         com.apple.eawt.Application app = new com.apple.eawt.Application();
-        app.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("res/icon.png")));
+        //app.setDockIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("res/icon.png")));
         try
         {
             OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAbout", (Class[])null));
@@ -148,7 +148,9 @@ public class MainEditor extends javax.swing.JFrame
         {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error While Reading", JOptionPane.ERROR_MESSAGE);
         }
-        jScrollPane1.putClientProperty("Window.documentFile", new File(curFile));
+        JRootPane root = this.getRootPane();
+		root.putClientProperty("Window.documentFile", new File(curFile));
+		root.putClientProperty("Window.documentModified", Boolean.FALSE);
         hasChanges = false;
         hasSavedToFile = true;
         this.setTitle(String.format("JPad - %s", curFile));
@@ -186,7 +188,8 @@ public class MainEditor extends javax.swing.JFrame
         {    fileToSaveTo = fd.getFile(); return;}
         
         curFile = fileToSaveTo;
-        jScrollPane1.putClientProperty("Window.documentFile", new File(curFile));
+        JRootPane root = this.getRootPane();
+		root.putClientProperty("Window.documentFile", new File(curFile));
         hasChanges = false;
         hasSavedToFile = true;
     }
@@ -215,7 +218,9 @@ public class MainEditor extends javax.swing.JFrame
             FileUtils.writeStringToFile(file, docText);
             hasChanges = false;
             JOptionPane.showMessageDialog(this, String.format("File saved to %s successfully!", curFile), "Information", JOptionPane.INFORMATION_MESSAGE);
-            jScrollPane1.putClientProperty("Window.documentFile", new File(curFile));
+            JRootPane root = this.getRootPane();
+			root.putClientProperty("Window.documentModified", Boolean.FALSE);
+			root.putClientProperty("Window.documentFile", new File(curFile));
             hasChanges = false;
             hasSavedToFile = true;
             this.setTitle(String.format("JPad - %s", curFile));
@@ -244,32 +249,39 @@ public class MainEditor extends javax.swing.JFrame
     {
         mainTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             if(!isOpen)
             {
-                jScrollPane1.putClientProperty("Window.documentModified", Boolean.TRUE);
+                updateDocModded();
                 hasChanges = true;
             }
         }
-
+        @Override
         public void insertUpdate(DocumentEvent e) {
             if(!isOpen)
             {
-                jScrollPane1.putClientProperty("Window.documentModified", Boolean.TRUE);
+                updateDocModded();
                 hasChanges = true;
             }
         }
-
+        @Override
         public void changedUpdate(DocumentEvent e) 
         {
             if(!isOpen)
             {
-                jScrollPane1.putClientProperty("Window.documentModified", Boolean.TRUE);
+                updateDocModded();
                 hasChanges = true;
             }
         }
   });
     }
+	
+	void updateDocModded()
+	{
+		JRootPane root = this.getRootPane();
+		root.putClientProperty("Window.documentModified", Boolean.TRUE);
+	}
     ///
     
     // <editor-fold defaultstate="collapsed" desc="Boring">
@@ -289,7 +301,7 @@ public class MainEditor extends javax.swing.JFrame
         exitMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("JPad");
         addWindowListener(new java.awt.event.WindowAdapter()
         {
@@ -364,11 +376,11 @@ public class MainEditor extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
         );
 
         pack();
@@ -440,7 +452,6 @@ public class MainEditor extends javax.swing.JFrame
                     System.exit(0);
                     break;
                 case 2:
-                    //cancel
                     break;
             }
         }
@@ -462,11 +473,14 @@ public class MainEditor extends javax.swing.JFrame
                            saveFile(curFile);
                        else
                            saveAs();
+					   this.setVisible(false);
                        break;
                    case 1:
-                       //closed
+                       this.setVisible(false);
+					   this.dispose();
                        break;
                    case 2:
+                       
                        break;
                }
            }
