@@ -18,6 +18,10 @@
  */
 package jpad;
 
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+
 /**
  *
  * @author mike
@@ -31,6 +35,11 @@ public class AboutDialog extends javax.swing.JFrame
     public AboutDialog()
     {
         initComponents();
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize(); //get screen size
+        this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2); //some kind of crazy math to get it centered
+        
+        Image img = Toolkit.getDefaultToolkit().getImage(getClass().getResource("res/icon.png")); //Retrieve the icon as an image
+        
     }
 
     /**
